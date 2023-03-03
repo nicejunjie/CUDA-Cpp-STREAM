@@ -14,10 +14,17 @@
 
   Written by: Massimiliano Fatica, NVIDIA Corporation
 
-  Further modifications by: Ben Cumming, CSCS; Andreas Herten (JSC/FZJ)
+  Further modifications by: Ben Cumming, CSCS; Andreas Herten (JSC/FZJ); Sebastian Achilles (JSC/FZJ)
 */
 
-#define NTIMES  20
+#ifdef NTIMES
+#if NTIMES<=1
+#   define NTIMES  20
+#endif
+#endif
+#ifndef NTIMES
+#   define NTIMES  20
+#endif
 
 #include <string>
 #include <vector>
@@ -27,9 +34,8 @@
 #include <limits.h>
 // #include <unistd.h>
 #include <getopt.h>
-#include <sys/time.h>
 
-#include <sys/time.h>
+#include <chrono>
 
 # ifndef MIN
 # define MIN(x,y) ((x)<(y)?(x):(y))
@@ -118,19 +124,6 @@ void parse_options(int argc, char** argv, bool& SI, bool& CSV, bool& CSV_full, b
         }
 }
 
-/* A gettimeofday routine to give access to the wall
-   clock timer on most UNIX-like systems.  */
-
-
-double mysecond()
-{
-    struct timeval tp;
-    struct timezone tzp;
-    int i = gettimeofday(&tp,&tzp);
-    return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
-}
-
-
 template <typename T>
 __global__ void set_array(T * __restrict__ const a, T value, int len)
 {
@@ -177,6 +170,7 @@ int main(int argc, char** argv)
     int j,k;
     double times[4][NTIMES];
     real scalar;
+    std::chrono::high_resolution_clock::time_point start_time, end_time;
     std::vector<std::string> label{"Copy:      ", "Scale:     ", "Add:       ", "Triad:     "};
 
     // Parse arguments
@@ -218,25 +212,29 @@ int main(int argc, char** argv)
     scalar=3.0f;
     for (k=0; k<NTIMES; k++)
     {
-        times[0][k]= mysecond();
+        start_time = std::chrono::high_resolution_clock::now();
         STREAM_Copy<real><<<dimGrid,dimBlock>>>(d_a, d_c, N);
         cudaThreadSynchronize();
-        times[0][k]= mysecond() -  times[0][k];
+        end_time = std::chrono::high_resolution_clock::now();
+        times[0][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
-        times[1][k]= mysecond();
+        start_time = std::chrono::high_resolution_clock::now();
         STREAM_Scale<real><<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
         cudaThreadSynchronize();
-        times[1][k]= mysecond() -  times[1][k];
+        end_time = std::chrono::high_resolution_clock::now();
+        times[1][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
-        times[2][k]= mysecond();
+        start_time = std::chrono::high_resolution_clock::now();
         STREAM_Add<real><<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
         cudaThreadSynchronize();
-        times[2][k]= mysecond() -  times[2][k];
+        end_time = std::chrono::high_resolution_clock::now();
+        times[2][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
-        times[3][k]= mysecond();
+        start_time = std::chrono::high_resolution_clock::now();
         STREAM_Triad<real><<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
         cudaThreadSynchronize();
-        times[3][k]= mysecond() -  times[3][k];
+        end_time = std::chrono::high_resolution_clock::now();
+        times[3][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
     }
 
     /*  --- SUMMARY --- */
