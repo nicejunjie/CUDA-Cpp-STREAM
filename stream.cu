@@ -17,7 +17,14 @@
   Further modifications by: Ben Cumming, CSCS; Andreas Herten (JSC/FZJ); Sebastian Achilles (JSC/FZJ)
 */
 
-#define NTIMES  20
+#ifdef NTIMES
+#if NTIMES<=1
+#   define NTIMES  20
+#endif
+#endif
+#ifndef NTIMES
+#   define NTIMES  20
+#endif
 
 #include <string>
 #include <vector>
