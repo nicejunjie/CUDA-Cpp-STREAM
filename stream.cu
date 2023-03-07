@@ -214,25 +214,25 @@ int main(int argc, char** argv)
   {
     start_time = std::chrono::steady_clock::now();
     STREAM_Copy<real><<<dimGrid,dimBlock>>>(d_a, d_c, N);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     end_time = std::chrono::steady_clock::now();
     times[0][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
     start_time = std::chrono::steady_clock::now();
     STREAM_Scale<real><<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     end_time = std::chrono::steady_clock::now();
     times[1][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
     start_time = std::chrono::steady_clock::now();
     STREAM_Add<real><<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     end_time = std::chrono::steady_clock::now();
     times[2][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
     start_time = std::chrono::steady_clock::now();
     STREAM_Triad<real><<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
     end_time = std::chrono::steady_clock::now();
     times[3][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
   }
