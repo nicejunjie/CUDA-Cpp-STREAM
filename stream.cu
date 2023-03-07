@@ -170,7 +170,7 @@ int main(int argc, char** argv)
   int j,k;
   double times[4][NTIMES];
   real scalar;
-  std::chrono::high_resolution_clock::time_point start_time, end_time;
+  std::chrono::steady_clock::time_point start_time, end_time;
   std::vector<std::string> label{"Copy:      ", "Scale:     ", "Add:       ", "Triad:     "};
 
   // Parse arguments
@@ -212,28 +212,28 @@ int main(int argc, char** argv)
   scalar=3.0f;
   for (k=0; k<NTIMES; k++)
   {
-    start_time = std::chrono::high_resolution_clock::now();
+    start_time = std::chrono::steady_clock::now();
     STREAM_Copy<real><<<dimGrid,dimBlock>>>(d_a, d_c, N);
     cudaThreadSynchronize();
-    end_time = std::chrono::high_resolution_clock::now();
+    end_time = std::chrono::steady_clock::now();
     times[0][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
-    start_time = std::chrono::high_resolution_clock::now();
+    start_time = std::chrono::steady_clock::now();
     STREAM_Scale<real><<<dimGrid,dimBlock>>>(d_b, d_c, scalar,  N);
     cudaThreadSynchronize();
-    end_time = std::chrono::high_resolution_clock::now();
+    end_time = std::chrono::steady_clock::now();
     times[1][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
-    start_time = std::chrono::high_resolution_clock::now();
+    start_time = std::chrono::steady_clock::now();
     STREAM_Add<real><<<dimGrid,dimBlock>>>(d_a, d_b, d_c,  N);
     cudaThreadSynchronize();
-    end_time = std::chrono::high_resolution_clock::now();
+    end_time = std::chrono::steady_clock::now();
     times[2][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
 
-    start_time = std::chrono::high_resolution_clock::now();
+    start_time = std::chrono::steady_clock::now();
     STREAM_Triad<real><<<dimGrid,dimBlock>>>(d_b, d_c, d_a, scalar,  N);
     cudaThreadSynchronize();
-    end_time = std::chrono::high_resolution_clock::now();
+    end_time = std::chrono::steady_clock::now();
     times[3][k] = std::chrono::duration_cast<std::chrono::duration<double>>(end_time - start_time).count();
   }
 
