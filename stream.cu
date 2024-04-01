@@ -18,7 +18,7 @@ Further modifications by: Ben Cumming, CSCS; Andreas Herten (JSC/FZJ); Sebastian
  */
 
 #ifdef NTIMES
-#if NTIMES<=1
+#if NTIMES <= 1
 #   define NTIMES  20
 #endif
 #endif
@@ -184,9 +184,29 @@ int main(int argc, char** argv)
   }
 
   /* Allocate memory on device */
+#ifdef USE_HOST
+  d_a=(real*)malloc(sizeof(real)*N);
+  d_b=(real*)malloc(sizeof(real)*N);
+  d_c=(real*)malloc(sizeof(real)*N);
+#elif defined(ZERO_COPY)
+  real *h_a, *h_b, *h_c;
+  cudaHostAlloc((void **) &h_a, sizeof(real)*N, cudaHostAllocMapped);
+  cudaHostAlloc((void **) &h_b, sizeof(real)*N, cudaHostAllocMapped);
+  cudaHostAlloc((void **) &h_c, sizeof(real)*N, cudaHostAllocMapped);
+
+  // these compiles fine but don't run correctly.
+  //h_a=(real*)malloc(sizeof(real)*N);
+  //h_b=(real*)malloc(sizeof(real)*N);
+  //h_c=(real*)malloc(sizeof(real)*N);
+
+  cudaHostGetDevicePointer((void **) &d_a, (void *) h_a, 0);
+  cudaHostGetDevicePointer((void **) &d_b, (void *) h_a, 0);
+  cudaHostGetDevicePointer((void **) &d_c, (void *) h_a, 0);
+#else 
   cudaMalloc((void**)&d_a, sizeof(real)*N);
   cudaMalloc((void**)&d_b, sizeof(real)*N);
   cudaMalloc((void**)&d_c, sizeof(real)*N);
+#endif
 
   /* Compute execution configuration */
   dim3 dimBlock(blockSize);
@@ -266,7 +286,7 @@ int main(int argc, char** argv)
     printf("\nFunction      Rate %s  Avg time(s)  Min time(s)  Max time(s)\n", gbpersec.c_str() );
     printf("-----------------------------------------------------------------\n");
     for (j=0; j<4; j++) {
-      printf("%s%11.4f     %11.8f  %11.8f  %11.8f\n", label[j].c_str(),
+      printf("%s%11.2f     %11.8f  %11.8f  %11.8f\n", label[j].c_str(),
           bytes[j]/mintime[j] / G,
           avgtime[j],
           mintime[j],
@@ -304,8 +324,24 @@ int main(int argc, char** argv)
 
 
   /* Free memory on device */
+#ifdef USE_HOST
+  free(d_a);
+  free(d_b);
+  free(d_c);
+#elif defined(ZERO_COPY)
   cudaFree(d_a);
   cudaFree(d_b);
   cudaFree(d_c);
+  cudaFreeHost(h_a);
+  cudaFreeHost(h_b);
+  cudaFreeHost(h_c);
+//  free(h_a);
+//  free(h_b);
+//  free(h_c);
+#else
+  cudaFree(d_a);
+  cudaFree(d_b);
+  cudaFree(d_c);
+#endif
 }
 
