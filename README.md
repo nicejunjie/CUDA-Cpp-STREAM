@@ -8,4 +8,5 @@ Three models are available:
 2) -DHOST:  use managed memory pointer allocated on the host, cuda runtime may make automatic page migration.
 3) -DZERO_COPY: use coherent access in unified memory architecture, directly access host memory without data movement. 
 
-See also [www.streambench.org](http://www.streambench.org), especially for notes on publishing results based on (variants of) the STREAM benchmark.
+To Do: 
+add output validation. 
