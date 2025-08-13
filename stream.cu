@@ -200,8 +200,8 @@ int main(int argc, char** argv)
   //h_c=(real*)malloc(sizeof(real)*N);
 
   cudaHostGetDevicePointer((void **) &d_a, (void *) h_a, 0);
-  cudaHostGetDevicePointer((void **) &d_b, (void *) h_a, 0);
-  cudaHostGetDevicePointer((void **) &d_c, (void *) h_a, 0);
+  cudaHostGetDevicePointer((void **) &d_b, (void *) h_b, 0);
+  cudaHostGetDevicePointer((void **) &d_c, (void *) h_c, 0);
 #else 
   cudaMalloc((void**)&d_a, sizeof(real)*N);
   cudaMalloc((void**)&d_b, sizeof(real)*N);
